@@ -1,9 +1,18 @@
 using Asp.Versioning;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NotificacoesColetaResiduos;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using WasteBinsAPI.Data.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
+
+#region INICIALIZANDO O BANCO DE DADOS
+var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
+builder.Services.AddDbContext<DatabaseContext>(
+    opt => opt.UseOracle(connectionString)
+);
+#endregion
 
 #region versionamento
 
