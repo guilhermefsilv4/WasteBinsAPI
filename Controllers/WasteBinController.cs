@@ -33,7 +33,7 @@ namespace WasteBinsAPI.Controllers
                 return NotFound();
             }
 
-            return wasteBin;
+            return Ok(wasteBin);
         }
         
         [HttpPut("{id}")]
