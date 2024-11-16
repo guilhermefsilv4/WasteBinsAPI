@@ -1,7 +1,9 @@
 using Asp.Versioning;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using WasteBinsAPI.Models;
 using WasteBinsAPI.Services;
+using WasteBinsAPI.ViewModel;
 
 namespace WasteBinsAPI.Controllers
 {
@@ -11,20 +13,24 @@ namespace WasteBinsAPI.Controllers
     public class WasteBinController : ControllerBase
     {
         private readonly IWasteBinService _service;
+        private readonly IMapper _mapper;
 
-        public WasteBinController(IWasteBinService service)
+        public WasteBinController(IWasteBinService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<WasteBinModel>> Get()
+        public ActionResult<IEnumerable<WasteBinViewModel>> Get()
         {
-            return Ok(_service.GetAll());
+            var wasteBins = _service.GetAll();
+            var viewModelList = _mapper.Map<IEnumerable<WasteBinViewModel>>(wasteBins);
+            return Ok(viewModelList);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<WasteBinModel> Get(int id)
+        public ActionResult<WasteBinViewModel> Get(int id)
         {
             var wasteBin = _service.GetById(id);
 
@@ -33,27 +39,33 @@ namespace WasteBinsAPI.Controllers
                 return NotFound();
             }
 
-            return Ok(wasteBin);
+            var viewModel = _mapper.Map<WasteBinViewModel>(wasteBin);
+            return Ok(viewModel);
         }
-        
+
         [HttpPut("{id}")]
-        public ActionResult Put(int id, WasteBinModel wasteBinModel)
+        public ActionResult Put(int id, WasteBinUpdateViewModel viewModel)
         {
+            if (id != viewModel.Id)
+                return BadRequest();
+            
             var itemFound = _service.GetById(id);
             if (itemFound == null)
                 return NotFound();
-            
+
+            _mapper.Map(viewModel, itemFound);
             _service.Update(itemFound);
             return NoContent();
         }
 
         [HttpPost]
-        public ActionResult Post([FromBody] WasteBinModel viewModel)
+        public ActionResult Post([FromBody] WasteBinCreateViewModel viewModel)
         {
-            _service.Add(viewModel);
-            return CreatedAtAction(nameof(Get), new { id = viewModel.Id }, viewModel);
+            var wasteBin = _mapper.Map<WasteBinModel>(viewModel);
+            _service.Add(wasteBin);
+            return CreatedAtAction(nameof(Get), new { id = wasteBin.Id }, wasteBin);
         }
-        
+
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {

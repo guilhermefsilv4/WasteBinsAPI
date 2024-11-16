@@ -1,29 +1,38 @@
 using Asp.Versioning;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NotificacoesColetaResiduos;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using WasteBinsAPI.Data.Contexts;
 using WasteBinsAPI.Data.Repository;
+using WasteBinsAPI.Models;
 using WasteBinsAPI.Services;
+using WasteBinsAPI.ViewModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region INICIALIZANDO O BANCO DE DADOS
+
 var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
 builder.Services.AddDbContext<DatabaseContext>(
     opt => opt.UseLazyLoadingProxies().UseOracle(connectionString).EnableSensitiveDataLogging()
 );
+
 #endregion
 
 #region versionamento
 
 #region Repositorios
+
 builder.Services.AddScoped<IWasteBinRepository, WasteBinRepository>();
+
 #endregion
 
 #region Services
+
 builder.Services.AddScoped<IWasteBinService, WasteBinService>();
+
 #endregion
 
 builder.Services.AddApiVersioning(options =>
@@ -42,6 +51,26 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen(options => options.OperationFilter<SwaggerDefaultValues>());
+
+#endregion
+
+#region AutoMapper
+
+// Configuração do AutoMapper
+var mapperConfig = new AutoMapper.MapperConfiguration(c =>
+{
+    c.AllowNullCollections = true;
+    c.AllowNullDestinationValues = true;
+
+    c.CreateMap<WasteBinModel, WasteBinViewModel>();
+
+    c.CreateMap<WasteBinViewModel, WasteBinModel>();
+    c.CreateMap<WasteBinCreateViewModel, WasteBinModel>();
+    c.CreateMap<WasteBinUpdateViewModel, WasteBinModel>();
+});
+
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
 
 #endregion
 
