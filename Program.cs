@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 #region INICIALIZANDO O BANCO DE DADOS
 var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
 builder.Services.AddDbContext<DatabaseContext>(
-    opt => opt.UseLazyLoadingProxies().UseOracle(connectionString)
+    opt => opt.UseLazyLoadingProxies().UseOracle(connectionString).EnableSensitiveDataLogging()
 );
 #endregion
 
