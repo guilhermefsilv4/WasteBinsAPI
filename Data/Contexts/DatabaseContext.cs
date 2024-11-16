@@ -5,7 +5,7 @@ namespace WasteBinsAPI.Data.Contexts
 {
     public class DatabaseContext : DbContext
     {
-        public DbSet<WasteBin> WasteBins { get; set; }
+        public virtual DbSet<WasteBinModel> WasteBins { get; set; }
 
         public DatabaseContext(DbContextOptions options) : base(options)
         {

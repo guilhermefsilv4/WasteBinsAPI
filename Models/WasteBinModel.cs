@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace WasteBinsAPI.Models;
 
 [Table("WasteBins")]
-public class WasteBin
+public class WasteBinModel
 {
     [Key]
     public int Id { get; set; }

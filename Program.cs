@@ -4,17 +4,27 @@ using Microsoft.Extensions.Options;
 using NotificacoesColetaResiduos;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using WasteBinsAPI.Data.Contexts;
+using WasteBinsAPI.Data.Repository;
+using WasteBinsAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region INICIALIZANDO O BANCO DE DADOS
 var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
 builder.Services.AddDbContext<DatabaseContext>(
-    opt => opt.UseOracle(connectionString)
+    opt => opt.UseLazyLoadingProxies().UseOracle(connectionString)
 );
 #endregion
 
 #region versionamento
+
+#region Repositorios
+builder.Services.AddScoped<IWasteBinRepository, WasteBinRepository>();
+#endregion
+
+#region Services
+builder.Services.AddScoped<IWasteBinService, WasteBinService>();
+#endregion
 
 builder.Services.AddApiVersioning(options =>
 {
