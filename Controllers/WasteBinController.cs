@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WasteBinsAPI.Models;
 using WasteBinsAPI.Services;
@@ -9,6 +10,7 @@ namespace WasteBinsAPI.Controllers
 {
     [ApiVersion(1)]
     [ApiController]
+    [Authorize]
     [Route("api/v{v:apiVersion}/[controller]")]
     public class WasteBinController : ControllerBase
     {
@@ -22,6 +24,7 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "USER,ADMIN")]
         public ActionResult<IEnumerable<WasteBinViewModel>> Get()
         {
             var wasteBins = _service.GetAll();
@@ -30,6 +33,7 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "USER,ADMIN")]
         public ActionResult<WasteBinViewModel> Get(int id)
         {
             var wasteBin = _service.GetById(id);
@@ -44,6 +48,7 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public ActionResult Put(int id, WasteBinUpdateViewModel viewModel)
         {
             if (id != viewModel.Id)
@@ -59,6 +64,7 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ADMIN")]
         public ActionResult Post([FromBody] WasteBinCreateViewModel viewModel)
         {
             var wasteBin = _mapper.Map<WasteBinModel>(viewModel);
@@ -67,6 +73,7 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);

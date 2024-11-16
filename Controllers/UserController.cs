@@ -61,16 +61,6 @@ namespace WasteBinsAPI.Controllers
             return NoContent();
         }
 
-        [HttpPost]
-        public async Task<ActionResult<UserViewModel>> CreateUser([FromBody] UserCreateViewModel viewModel)
-        {
-            var userModel = _mapper.Map<UserModel>(viewModel);
-            await _userService.AddUserAsync(userModel);
-            
-            var userViewModel = _mapper.Map<UserViewModel>(userModel);
-            return CreatedAtAction(nameof(GetUser), new { id = userViewModel.UserId }, userViewModel);
-        }
-
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
