@@ -1,7 +1,10 @@
+using System.Text;
 using Asp.Versioning;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using NotificacoesColetaResiduos;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using WasteBinsAPI.Data.Contexts;
@@ -21,19 +24,23 @@ builder.Services.AddDbContext<DatabaseContext>(
 
 #endregion
 
-#region versionamento
-
 #region Repositorios
 
 builder.Services.AddScoped<IWasteBinRepository, WasteBinRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 #endregion
 
 #region Services
 
 builder.Services.AddScoped<IWasteBinService, WasteBinService>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 #endregion
+
+#region versionamento
 
 builder.Services.AddApiVersioning(options =>
 {
@@ -57,7 +64,7 @@ builder.Services.AddSwaggerGen(options => options.OperationFilter<SwaggerDefault
 #region AutoMapper
 
 // Configuração do AutoMapper
-var mapperConfig = new AutoMapper.MapperConfiguration(c =>
+var mapperConfig = new MapperConfiguration(c =>
 {
     c.AllowNullCollections = true;
     c.AllowNullDestinationValues = true;
@@ -67,10 +74,38 @@ var mapperConfig = new AutoMapper.MapperConfiguration(c =>
     c.CreateMap<WasteBinViewModel, WasteBinModel>();
     c.CreateMap<WasteBinCreateViewModel, WasteBinModel>();
     c.CreateMap<WasteBinUpdateViewModel, WasteBinModel>();
+
+    c.CreateMap<UserModel, UserViewModel>();
+
+    c.CreateMap<UserViewModel, UserModel>();
+    c.CreateMap<UserCreateViewModel, UserModel>();
+    c.CreateMap<UserUpdateViewModel, UserModel>();
 });
 
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
+
+#endregion
+
+#region Authetication
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+        var secretKey = jwtSettings.GetValue<string>("SecretKey");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 #endregion
 
@@ -100,6 +135,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
