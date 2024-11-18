@@ -11,10 +11,13 @@ public class WasteBinService : IWasteBinService
     {
         _repository = repository;
     }
-    
+
     public IEnumerable<WasteBinModel> GetAll() => _repository.GetAll();
 
     public WasteBinModel? GetById(int id) => _repository.GetById(id);
+
+    public IEnumerable<WasteBinModel> GetAllReference(int lastReference, int size) =>
+        _repository.GetAllReference(lastReference, size);
 
     public void Add(WasteBinModel wasteBin) => _repository.Add(wasteBin);
 

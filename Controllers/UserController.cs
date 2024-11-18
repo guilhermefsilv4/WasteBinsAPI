@@ -29,6 +29,23 @@ namespace WasteBinsAPI.Controllers
             return Ok(viewModelList);
         }
 
+        [ApiVersion(2)]
+        [HttpGet]
+        public ActionResult<IEnumerable<WasteBinPaginationViewModel>> GetUsers([FromQuery] int referencia = 0,
+            [FromQuery] int tamanho = 10)
+        {
+            var wasteBins = _userService.GetAllReference(referencia, tamanho);
+            var viewModelList = _mapper.Map<IEnumerable<UserViewModel>>(wasteBins);
+            var viewModel = new UserPaginationViewModel
+            {
+                Users = viewModelList,
+                PageSize = tamanho,
+                Ref = referencia,
+                NextRef = viewModelList.Last().UserId
+            };
+            return Ok(viewModel);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<UserViewModel>> GetUser(int id)
         {

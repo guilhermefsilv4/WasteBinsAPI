@@ -18,6 +18,16 @@ public class UserRepository : IUserRepository
         return await _context.Set<UserModel>().ToListAsync();
     }
 
+    public IEnumerable<UserModel> GetAllReference(int lastReference, int size)
+    {
+        return _context.Users
+            .Where(user => user.UserId > lastReference)
+            .OrderBy(user => user.UserId)
+            .Take(size)
+            .AsNoTracking()
+            .ToList();
+    }
+
     public async Task<UserModel?> GetUserByIdAsync(int userId)
     {
         return await _context.Set<UserModel>().FindAsync(userId);

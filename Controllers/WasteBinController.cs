@@ -32,6 +32,23 @@ namespace WasteBinsAPI.Controllers
             return Ok(viewModelList);
         }
 
+        [HttpGet]
+        [ApiVersion(2)]
+        public ActionResult<IEnumerable<WasteBinPaginationViewModel>> Get([FromQuery] int referencia = 0,
+            [FromQuery] int tamanho = 10)
+        {
+            var wasteBins = _service.GetAllReference(referencia, tamanho);
+            var viewModelList = _mapper.Map<IEnumerable<WasteBinViewModel>>(wasteBins);
+            var viewModel = new WasteBinPaginationViewModel
+            {
+                WasteBins = viewModelList,
+                PageSize = tamanho,
+                Ref = referencia,
+                NextRef = viewModelList.Last().Id
+            };
+            return Ok(viewModel);
+        }
+
         [HttpGet("{id}")]
         [Authorize(Roles = "USER,ADMIN")]
         public ActionResult<WasteBinViewModel> Get(int id)
@@ -53,7 +70,7 @@ namespace WasteBinsAPI.Controllers
         {
             if (id != viewModel.Id)
                 return BadRequest();
-            
+
             var itemFound = _service.GetById(id);
             if (itemFound == null)
                 return NotFound();

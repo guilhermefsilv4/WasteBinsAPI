@@ -19,6 +19,9 @@ public class UserService : IUserService
         return await _userRepository.GetAllUsersAsync();
     }
 
+    public IEnumerable<UserModel> GetAllReference(int lastReference, int size) =>
+        _userRepository.GetAllReference(lastReference, size);
+
     public async Task<UserModel?> GetUserByIdAsync(int userId)
     {
         return await _userRepository.GetUserByIdAsync(userId);
@@ -31,10 +34,8 @@ public class UserService : IUserService
 
     public async Task AddUserAsync(UserModel user)
     {
-        // Gera o hash da senha antes de salvar
         user.Password = _passwordHasher.HashPassword(user.Password);
-
-        // Salva o usuário
+        
         await _userRepository.AddUserAsync(user);
     }
 
@@ -45,12 +46,10 @@ public class UserService : IUserService
         {
             throw new KeyNotFoundException("User not found.");
         }
-
-        // Atualiza somente os campos relevantes
+        
         existingUser.Username = updatedUser.Username;
         existingUser.Role = updatedUser.Role;
-
-        // Atualiza a senha se fornecida
+        
         if (!string.IsNullOrEmpty(updatedUser.Password))
         {
             existingUser.Password = _passwordHasher.HashPassword(updatedUser.Password);

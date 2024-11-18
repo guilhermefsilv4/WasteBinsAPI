@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WasteBinsAPI.Data.Contexts;
 using WasteBinsAPI.Models;
 
@@ -11,10 +12,20 @@ public class WasteBinRepository : IWasteBinRepository
     {
         _context = context;
     }
-    
+
     public IEnumerable<WasteBinModel> GetAll()
     {
         return _context.WasteBins.ToList();
+    }
+
+    public IEnumerable<WasteBinModel> GetAllReference(int lastReference, int size)
+    {
+        return _context.WasteBins
+            .Where(wasteBin => wasteBin.Id > lastReference)
+            .OrderBy(wasteBin => wasteBin.Id)
+            .Take(size)
+            .AsNoTracking()
+            .ToList();
     }
 
     public WasteBinModel? GetById(int id)
