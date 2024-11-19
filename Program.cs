@@ -63,7 +63,6 @@ builder.Services.AddSwaggerGen(options => options.OperationFilter<SwaggerDefault
 
 #region AutoMapper
 
-// Configuração do AutoMapper
 var mapperConfig = new MapperConfiguration(c =>
 {
     c.AllowNullCollections = true;
@@ -101,7 +100,7 @@ builder.Services.AddAuthentication(options =>
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? "")),
             ValidateIssuer = false,
             ValidateAudience = false
         };
@@ -110,7 +109,6 @@ builder.Services.AddAuthentication(options =>
 #endregion
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -141,3 +139,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
