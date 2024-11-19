@@ -32,7 +32,7 @@ public class AuthController : ControllerBase
             return Unauthorized();
         }
 
-        return Ok(new { Token = token });
+        return Ok(new TokenViewModel(token.Result));
     }
 
     [HttpPost("register")]
