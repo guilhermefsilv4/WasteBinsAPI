@@ -57,6 +57,7 @@ namespace WasteBinsAPI.Services
             {
                 Subject = new ClaimsIdentity(new List<Claim>
                 {
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Role, user.Role),
                     new Claim(ClaimTypes.Hash, Guid.NewGuid().ToString())

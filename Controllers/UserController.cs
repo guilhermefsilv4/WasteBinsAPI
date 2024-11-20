@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using WasteBinsAPI.Models;
@@ -10,6 +11,7 @@ namespace WasteBinsAPI.Controllers
 {
     [ApiVersion(1)]
     [ApiController]
+    [Authorize(Roles = "ADMIN")]
     [Route("api/v{v:apiVersion}/[controller]")]
     public class UserController : ControllerBase
     {
@@ -41,6 +43,7 @@ namespace WasteBinsAPI.Controllers
             {
                 return NotFound(new { message = "No users found for the given parameters." });
             }
+
             var viewModel = new UserPaginationViewModel
             {
                 Users = viewModelList,

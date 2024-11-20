@@ -35,6 +35,7 @@ namespace WasteBinsAPI.Controllers
 
         [HttpGet]
         [ApiVersion(2)]
+        [Authorize(Roles = "USER,ADMIN")]
         public ActionResult<IEnumerable<WasteBinPaginationViewModel>> Get([FromQuery] int referencia = 0,
             [FromQuery] int tamanho = 10)
         {
