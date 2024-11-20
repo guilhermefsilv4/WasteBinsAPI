@@ -2,6 +2,7 @@ using Asp.Versioning;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using WasteBinsAPI.Models;
 using WasteBinsAPI.Services;
 using WasteBinsAPI.ViewModel;
@@ -39,6 +40,11 @@ namespace WasteBinsAPI.Controllers
         {
             var wasteBins = _service.GetAllReference(referencia, tamanho);
             var viewModelList = _mapper.Map<IEnumerable<WasteBinViewModel>>(wasteBins);
+            if (viewModelList.IsNullOrEmpty())
+            {
+                return NotFound(new { message = "No waste bins found for the given parameters." });
+            }
+
             var viewModel = new WasteBinPaginationViewModel
             {
                 WasteBins = viewModelList,
