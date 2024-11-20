@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using WasteBinsAPI.Models;
 using WasteBinsAPI.Services;
 using WasteBinsAPI.ViewModel;
@@ -36,6 +37,10 @@ namespace WasteBinsAPI.Controllers
         {
             var wasteBins = _userService.GetAllReference(referencia, tamanho);
             var viewModelList = _mapper.Map<IEnumerable<UserViewModel>>(wasteBins);
+            if (viewModelList.IsNullOrEmpty())
+            {
+                return NotFound(new { message = "No users found for the given parameters." });
+            }
             var viewModel = new UserPaginationViewModel
             {
                 Users = viewModelList,

@@ -10,6 +10,7 @@ using NotificacoesColetaResiduos;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using WasteBinsAPI.Data.Contexts;
 using WasteBinsAPI.Data.Repository;
+using WasteBinsAPI.Middleware;
 using WasteBinsAPI.Models;
 using WasteBinsAPI.Services;
 using WasteBinsAPI.ViewModel;
@@ -147,6 +148,8 @@ if (!isTestEnvironment)
     app.UseAuthentication();
     app.UseAuthorization();
 }
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllers();
 
