@@ -1,6 +1,7 @@
 using System.Text;
 using Asp.Versioning;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -88,12 +89,19 @@ builder.Services.AddSingleton(mapper);
 
 #region Authetication
 
-builder.Services.AddAuthentication(options =>
+bool isTestEnvironment = builder.Environment.EnvironmentName == "Testing";
+if (isTestEnvironment)
+{
+    builder.Services.AddAuthentication("Test")
+        .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
+}
+else
+{
+    builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
+    }).AddJwtBearer(options =>
     {
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings.GetValue<string>("SecretKey");
@@ -105,6 +113,7 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = false
         };
     });
+}
 
 #endregion
 
@@ -133,11 +142,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
-app.UseAuthorization();
+if (!isTestEnvironment)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
 
 app.MapControllers();
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}
