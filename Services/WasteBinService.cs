@@ -26,9 +26,11 @@ public class WasteBinService : IWasteBinService
     public void Delete(int id)
     {
         var wasteBin = _repository.GetById(id);
-        if (wasteBin != null)
+        if (wasteBin == null)
         {
-            _repository.Delete(wasteBin);
+            throw new KeyNotFoundException("User not found");
         }
+
+        _repository.Delete(wasteBin);
     }
 }

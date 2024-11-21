@@ -1,4 +1,5 @@
 using WasteBinsAPI.Data.Repository;
+using WasteBinsAPI.Exceptions;
 using WasteBinsAPI.Models;
 
 namespace WasteBinsAPI.Services;
@@ -34,8 +35,14 @@ public class UserService : IUserService
 
     public async Task AddUserAsync(UserModel user)
     {
+        var userFound = await _userRepository.GetUserByUsernameAsync(user.Username);
+        if (userFound != null)
+        {
+            throw new UserAlreadyExists();
+        }
+
         user.Password = _passwordHasher.HashPassword(user.Password);
-        
+
         await _userRepository.AddUserAsync(user);
     }
 
@@ -46,10 +53,19 @@ public class UserService : IUserService
         {
             throw new KeyNotFoundException("User not found.");
         }
-        
+
+        if (!existingUser.Username.Equals(updatedUser.Username))
+        {
+            var userExists = await _userRepository.GetUserByUsernameAsync(updatedUser.Username);
+            if (userExists != null)
+            {
+                throw new UserAlreadyExists();
+            }
+        }
+
         existingUser.Username = updatedUser.Username;
         existingUser.Role = updatedUser.Role;
-        
+
         if (!string.IsNullOrEmpty(updatedUser.Password))
         {
             existingUser.Password = _passwordHasher.HashPassword(updatedUser.Password);

@@ -43,7 +43,7 @@ namespace WasteBinsAPI.Controllers
             var viewModelList = _mapper.Map<IEnumerable<WasteBinViewModel>>(wasteBins);
             if (viewModelList.IsNullOrEmpty())
             {
-                return NotFound(new { message = "No waste bins found for the given parameters." });
+                return NotFound();
             }
 
             var viewModel = new WasteBinPaginationViewModel

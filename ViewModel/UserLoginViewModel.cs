@@ -1,9 +1,9 @@
-using Microsoft.Build.Framework;
+using System.ComponentModel.DataAnnotations;
 
 namespace WasteBinsAPI.ViewModel;
 
 public class UserLoginViewModel
 {
-    [Required] public string Username { get; set; }
-    [Required] public string Password { get; set; }
+    [Required] [MinLength(1)] public string Username { get; set; }
+    [Required] [MinLength(1)] public string Password { get; set; }
 }

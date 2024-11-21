@@ -1,8 +1,6 @@
 using Asp.Versioning;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WasteBinsAPI.Exceptions;
 using WasteBinsAPI.Models;
 using WasteBinsAPI.Services;
 using WasteBinsAPI.ViewModel;
@@ -40,18 +38,11 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<UserViewModel>> Register([FromBody] UserCreateViewModel viewModel)
     {
-        try
-        {
-            var userModel = _mapper.Map<UserModel>(viewModel);
-            await _userService.AddUserAsync(userModel);
+        var userModel = _mapper.Map<UserModel>(viewModel);
+        await _userService.AddUserAsync(userModel);
 
-            var userViewModel = _mapper.Map<UserViewModel>(userModel);
-            var uri = Url.Action("GetUser", "User", new { id = userViewModel.UserId }, Request.Scheme);
-            return Created(uri, userViewModel);
-        }
-        catch (DbUpdateException)
-        {
-            throw new UserAlreadyExists();
-        }
+        var userViewModel = _mapper.Map<UserViewModel>(userModel);
+        var uri = Url.Action("GetUser", "User", new { id = userViewModel.UserId }, Request.Scheme);
+        return Created(uri, userViewModel);
     }
 }

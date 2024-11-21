@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Asp.Versioning;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,7 @@ namespace WasteBinsAPI.Controllers
 {
     [ApiVersion(1)]
     [ApiController]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize]
     [Route("api/v{v:apiVersion}/[controller]")]
     public class UserController : ControllerBase
     {
@@ -25,6 +26,7 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "ADMIN")]
         public async Task<ActionResult<IEnumerable<UserViewModel>>> GetUsers()
         {
             var users = await _userService.GetAllUsersAsync();
@@ -34,6 +36,7 @@ namespace WasteBinsAPI.Controllers
 
         [ApiVersion(2)]
         [HttpGet]
+        [Authorize(Roles = "ADMIN")]
         public ActionResult<IEnumerable<WasteBinPaginationViewModel>> GetUsers([FromQuery] int referencia = 0,
             [FromQuery] int tamanho = 10)
         {
@@ -41,7 +44,7 @@ namespace WasteBinsAPI.Controllers
             var viewModelList = _mapper.Map<IEnumerable<UserViewModel>>(wasteBins);
             if (viewModelList.IsNullOrEmpty())
             {
-                return NotFound(new { message = "No users found for the given parameters." });
+                return NotFound();
             }
 
             var viewModel = new UserPaginationViewModel
@@ -55,6 +58,7 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<ActionResult<UserViewModel>> GetUser(int id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -67,18 +71,40 @@ namespace WasteBinsAPI.Controllers
             return Ok(viewModel);
         }
 
+        [HttpGet("my-account")]
+        [Authorize(Roles = "USER,ADMIN")]
+        public async Task<ActionResult<UserViewModel>> GetUser()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _userService.GetUserByIdAsync(Int32.Parse(userId));
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = _mapper.Map<UserViewModel>(user);
+            return Ok(viewModel);
+        }
+
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateUser(int id, UserUpdateViewModel userUpdateViewModel)
         {
             if (id != userUpdateViewModel.UserId)
             {
-                return BadRequest("User ID mismatch.");
+                return BadRequest(new { message = "User ID mismatch." });
             }
 
             var userFound = await _userService.GetUserByIdAsync(id);
             if (userFound == null)
             {
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
             }
 
             var userModel = _mapper.Map<UserModel>(userUpdateViewModel);
@@ -87,15 +113,38 @@ namespace WasteBinsAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var userFound = await _userService.GetUserByIdAsync(id);
             if (userFound == null)
             {
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
             }
 
             await _userService.DeleteUserAsync(id);
+            return NoContent();
+        }
+
+        [HttpDelete("my-account/delete")]
+        [Authorize(Roles = "USER,ADMIN")]
+        public async Task<ActionResult<UserViewModel>> DeleteUser()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            int ParsedUserId = Int32.Parse(userId);
+            var userFound = await _userService.GetUserByIdAsync(ParsedUserId);
+            if (userFound == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            await _userService.DeleteUserAsync(ParsedUserId);
             return NoContent();
         }
     }
